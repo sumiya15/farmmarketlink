@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farm Market Link</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      font-family: 'Nunito', sans-serif;
+    }
+    .nav-link {
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: currentColor;
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 100%;
+    }
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .pulse-gentle {
+      animation: pulseGentle 2s ease-in-out infinite;
+    }
+    @keyframes pulseGentle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #166534, #15803d, #22c55e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .page-section {
+      display: none;
+    }
+    .page-section.active {
+      display: block;
+    }
+    .weather-icon {
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gradient-to-br from-green-50 via-white to-amber-50">
+  <div id="app-wrapper" class="h-full w-full overflow-auto"><!-- Navigation Header -->
+   <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-green-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+     <div class="flex items-center justify-between h-16"><!-- Logo -->
+      <div class="flex items-center gap-3">
+       <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center shadow-lg">
+        <svg class="w-6 h-6 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+        </svg>
+       </div>
+       <div>
+        <h1 id="site-title" class="text-lg font-bold text-green-800">Farm Market Link</h1>
+        <p id="tagline" class="text-xs text-green-600">Agricultural Pricing &amp; Demand Forecast</p>
+       </div>
+      </div><!-- Desktop Navigation -->
+      <nav class="hidden md:flex items-center gap-8"><button onclick="showPage('home')" class="nav-link text-sm font-semibold text-green-700 hover:text-green-900 active" data-page="home">🏠 Home</button> <button onclick="showPage('dashboard')" class="nav-link text-sm font-semibold text-green-700 hover:text-green-900" data-page="dashboard">📊 Dashboard</button> <button onclick="showPage('price')" class="nav-link text-sm font-semibold text-green-700 hover:text-green-900" data-page="price">💰 Price Forecast</button> <button onclick="showPage('demand')" class="nav-link text-sm font-semibold text-green-700 hover:text-green-900" data-page="demand">📈 Demand Forecast</button> <button onclick="showPage('weather')" class="nav-link text-sm font-semibold text-green-700 hover:text-green-900" data-page="weather">🌤️ Weather Impact</button>
+      </nav><!-- Mobile Menu Button --> <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg bg-green-100 text-green-700">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+       </svg></button>
+     </div><!-- Mobile Navigation -->
+     <div id="mobile-menu" class="hidden md:hidden pb-4">
+      <div class="flex flex-col gap-2"><button onclick="showPage('home')" class="text-left px-4 py-2 rounded-lg bg-green-100 text-green-700 font-semibold">🏠 Home</button> <button onclick="showPage('dashboard')" class="text-left px-4 py-2 rounded-lg hover:bg-green-50 text-green-700 font-semibold">📊 Dashboard</button> <button onclick="showPage('price')" class="text-left px-4 py-2 rounded-lg hover:bg-green-50 text-green-700 font-semibold">💰 Price Forecast</button> <button onclick="showPage('demand')" class="text-left px-4 py-2 rounded-lg hover:bg-green-50 text-green-700 font-semibold">📈 Demand Forecast</button> <button onclick="showPage('weather')" class="text-left px-4 py-2 rounded-lg hover:bg-green-50 text-green-700 font-semibold">🌤️ Weather Impact</button>
+      </div>
+     </div>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"><!-- HOME PAGE -->
+    <section id="page-home" class="page-section active fade-in"><!-- Hero Section -->
+     <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-600 via-green-700 to-green-800 p-8 md:p-12 mb-8 shadow-2xl">
+      <div class="absolute inset-0 opacity-10">
+       <svg class="w-full h-full" viewbox="0 0 400 400"><pattern id="grid" width="40" height="40" patternunits="userSpaceOnUse">
+         <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1" />
+        </pattern> <rect width="100%" height="100%" fill="url(#grid)" />
+       </svg>
+      </div>
+      <div class="relative grid md:grid-cols-2 gap-8 items-center">
+       <div>
+        <div class="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-2 mb-6"><span class="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span> <span class="text-green-100 text-sm font-medium">Live Market Data</span>
+        </div>
+        <h2 id="hero-heading" class="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight">Smart Farming Starts Here</h2>
+        <p id="hero-description" class="text-green-100 text-lg mb-8 leading-relaxed">Get accurate crop price predictions and demand forecasts powered by weather data and market analytics. Make informed decisions for better yields.</p><button onclick="showPage('dashboard')" id="cta-button" class="pulse-gentle inline-flex items-center gap-3 bg-white text-green-700 font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all hover:bg-green-50"> <span>View Market Forecast</span>
+         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+         </svg></button>
+       </div><!-- Hero Illustration -->
+       <div class="hidden md:flex justify-center">
+        <div class="relative">
+         <div class="w-64 h-64 bg-white/10 rounded-full flex items-center justify-center">
+          <svg class="w-48 h-48 text-white/80" viewbox="0 0 100 100" fill="currentColor"><ellipse cx="50" cy="85" rx="35" ry="8" fill="rgba(255,255,255,0.3)" /> <path d="M50 75 L50 45" stroke="currentColor" stroke-width="4" fill="none" /> <path d="M50 45 Q55 35 65 40 Q60 30 50 25 Q40 30 35 40 Q45 35 50 45" fill="currentColor" /> <circle cx="30" cy="70" r="8" fill="rgba(255,255,255,0.5)" /> <circle cx="70" cy="70" r="6" fill="rgba(255,255,255,0.4)" /> <path d="M20 80 Q25 75 30 80 Q35 75 40 80" stroke="currentColor" stroke-width="2" fill="none" /> <path d="M60 80 Q65 75 70 80 Q75 75 80 80" stroke="currentColor" stroke-width="2" fill="none" />
+          </svg>
+         </div>
+         <div class="absolute -top-4 -right-4 bg-yellow-400 rounded-full p-3 shadow-lg animate-bounce"><span class="text-2xl">☀️</span>
+         </div>
+         <div class="absolute -bottom-2 -left-4 bg-blue-400 rounded-full p-3 shadow-lg"><span class="text-2xl">💧</span>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Features Grid -->
+     <div class="grid md:grid-cols-3 gap-6 mb-8">
+      <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+       <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center mb-4 shadow-md"><span class="text-2xl">📊</span>
+       </div>
+       <h3 class="text-xl font-bold text-green-800 mb-2">Price Analytics</h3>
+       <p class="text-gray-600">Track historical prices and get AI-powered predictions for your crops.</p>
+      </div>
+      <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+       <div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center mb-4 shadow-md"><span class="text-2xl">🌾</span>
+       </div>
+       <h3 class="text-xl font-bold text-green-800 mb-2">Demand Forecast</h3>
+       <p class="text-gray-600">Understand market demand patterns to optimize your harvest timing.</p>
+      </div>
+      <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+       <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-md"><span class="text-2xl">🌤️</span>
+       </div>
+       <h3 class="text-xl font-bold text-green-800 mb-2">Weather Impact</h3>
+       <p class="text-gray-600">See how weather conditions affect crop prices in your region.</p>
+      </div>
+     </div><!-- Quick Stats -->
+     <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+      <h3 class="text-lg font-bold text-green-800 mb-4">📈 Today's Market Overview</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+       <div class="text-center p-4 bg-green-50 rounded-xl">
+        <p class="text-3xl font-bold text-green-600">₹2,450</p>
+        <p class="text-sm text-gray-600">Wheat/Quintal</p><span class="inline-flex items-center text-xs text-green-600 font-medium">↑ 3.2%</span>
+       </div>
+       <div class="text-center p-4 bg-amber-50 rounded-xl">
+        <p class="text-3xl font-bold text-amber-600">₹1,890</p>
+        <p class="text-sm text-gray-600">Rice/Quintal</p><span class="inline-flex items-center text-xs text-amber-600 font-medium">↑ 1.8%</span>
+       </div>
+       <div class="text-center p-4 bg-blue-50 rounded-xl">
+        <p class="text-3xl font-bold text-blue-600">85%</p>
+        <p class="text-sm text-gray-600">Demand Index</p><span class="inline-flex items-center text-xs text-blue-600 font-medium">High</span>
+       </div>
+       <div class="text-center p-4 bg-purple-50 rounded-xl">
+        <p class="text-3xl font-bold text-purple-600">24°C</p>
+        <p class="text-sm text-gray-600">Avg. Temperature</p><span class="inline-flex items-center text-xs text-purple-600 font-medium">Optimal</span>
+       </div>
+      </div>
+     </div>
+    </section><!-- DASHBOARD PAGE -->
+    <section id="page-dashboard" class="page-section fade-in">
+     <div class="mb-6">
+      <h2 class="text-2xl font-bold text-green-800 mb-2">📊 Market Dashboard</h2>
+      <p class="text-gray-600">Real-time agricultural market insights at a glance</p>
+     </div><!-- Stat Cards -->
+     <div class="grid md:grid-cols-4 gap-4 mb-8">
+      <div class="stat-card card-hover rounded-2xl p-5 shadow-lg border border-green-100">
+       <div class="flex items-center justify-between mb-3"><span class="text-2xl">💰</span> <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">+3.2%</span>
+       </div>
+       <p class="text-2xl font-bold text-green-800">₹2,450</p>
+       <p class="text-sm text-gray-600">Current Wheat Price</p>
+      </div>
+      <div class="stat-card card-hover rounded-2xl p-5 shadow-lg border border-green-100">
+       <div class="flex items-center justify-between mb-3"><span class="text-2xl">📈</span> <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">Forecast</span>
+       </div>
+       <p class="text-2xl font-bold text-blue-800">₹2,580</p>
+       <p class="text-sm text-gray-600">Predicted (30 days)</p>
+      </div>
+      <div class="stat-card card-hover rounded-2xl p-5 shadow-lg border border-green-100">
+       <div class="flex items-center justify-between mb-3"><span class="text-2xl">🎯</span> <span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">High</span>
+       </div>
+       <p class="text-2xl font-bold text-amber-800">85%</p>
+       <p class="text-sm text-gray-600">Demand Level</p>
+      </div>
+      <div class="stat-card card-hover rounded-2xl p-5 shadow-lg border border-green-100">
+       <div class="flex items-center justify-between mb-3"><span class="text-2xl">🌧️</span> <span class="px-2 py-1 bg-cyan-100 text-cyan-700 text-xs font-bold rounded-full">Good</span>
+       </div>
+       <p class="text-2xl font-bold text-cyan-800">120mm</p>
+       <p class="text-sm text-gray-600">Monthly Rainfall</p>
+      </div>
+     </div><!-- Charts Grid -->
+     <div class="grid md:grid-cols-2 gap-6 mb-8">
+      <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+       <h3 class="text-lg font-bold text-green-800 mb-4">📉 Price Trend (Last 6 Months)</h3>
+       <canvas id="priceTrendChart" height="200"></canvas>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+       <h3 class="text-lg font-bold text-green-800 mb-4">📊 Demand Forecast</h3>
+       <canvas id="demandChart" height="200"></canvas>
+      </div>
+     </div><!-- Weather Summary -->
+     <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+      <h3 class="text-lg font-bold text-green-800 mb-4">🌤️ Weather Summary</h3>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+       <div class="text-center p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl"><span class="text-3xl weather-icon">☀️</span>
+        <p class="font-bold text-gray-800 mt-2">Mon</p>
+        <p class="text-sm text-gray-600">32°C</p>
+       </div>
+       <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl"><span class="text-3xl weather-icon">⛅</span>
+        <p class="font-bold text-gray-800 mt-2">Tue</p>
+        <p class="text-sm text-gray-600">28°C</p>
+       </div>
+       <div class="text-center p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl"><span class="text-3xl weather-icon">🌧️</span>
+        <p class="font-bold text-gray-800 mt-2">Wed</p>
+        <p class="text-sm text-gray-600">24°C</p>
+       </div>
+       <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl"><span class="text-3xl weather-icon">🌦️</span>
+        <p class="font-bold text-gray-800 mt-2">Thu</p>
+        <p class="text-sm text-gray-600">26°C</p>
+       </div>
+       <div class="text-center p-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl"><span class="text-3xl weather-icon">☀️</span>
+        <p class="font-bold text-gray-800 mt-2">Fri</p>
+        <p class="text-sm text-gray-600">30°C</p>
+       </div>
+      </div>
+     </div>
+    </section><!-- PRICE FORECAST PAGE -->
+    <section id="page-price" class="page-section fade-in">
+     <div class="mb-6">
+      <h2 class="text-2xl font-bold text-green-800 mb-2">💰 Crop Price Forecast</h2>
+      <p class="text-gray-600">Analyze historical prices and view predictions</p>
+     </div><!-- Filters -->
+     <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100 mb-6">
+      <div class="grid md:grid-cols-3 gap-4">
+       <div><label class="block text-sm font-semibold text-gray-700 mb-2">Select Crop</label> <select id="cropSelect" onchange="updatePriceChart()" class="w-full px-4 py-3 rounded-xl border border-green-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-green-50"> <option value="wheat">🌾 Wheat</option> <option value="rice">🍚 Rice</option> <option value="corn">🌽 Corn</option> <option value="soybean">🫘 Soybean</option> </select>
+       </div>
+       <div><label class="block text-sm font-semibold text-gray-700 mb-2">Select Region</label> <select id="regionSelect" onchange="updatePriceChart()" class="w-full px-4 py-3 rounded-xl border border-green-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-green-50"> <option value="punjab">Punjab</option> <option value="haryana">Haryana</option> <option value="up">Uttar Pradesh</option> <option value="mp">Madhya Pradesh</option> </select>
+       </div>
+       <div><label class="block text-sm font-semibold text-gray-700 mb-2">Time Period</label> <select class="w-full px-4 py-3 rounded-xl border border-green-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-green-50"> <option>Last 6 Months</option> <option>Last 1 Year</option> <option>Last 2 Years</option> </select>
+       </div>
+      </div>
+     </div><!-- Price Chart -->
+     <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100 mb-6">
+      <div class="flex items-center justify-between mb-4">
+       <h3 class="text-lg font-bold text-green-800">Historical vs Predicted Prices</h3>
+       <div class="flex items-center gap-4 text-sm"><span class="flex items-center gap-2"><span class="w-3 h-3 bg-green-500 rounded-full"></span> Historical</span> <span class="flex items-center gap-2"><span class="w-3 h-3 bg-blue-500 rounded-full border-2 border-dashed border-blue-300"></span> Predicted</span>
+       </div>
+      </div>
+      <canvas id="priceChart" height="250"></canvas>
+     </div><!-- Seasonal Indicators -->
+     <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+      <h3 class="text-lg font-bold text-green-800 mb-4">🗓️ Seasonal Price Trends</h3>
+      <div class="grid md:grid-cols-4 gap-4">
+       <div class="p-4 bg-gradient-to-br from-pink-50 to-rose-100 rounded-xl text-center"><span class="text-2xl">🌸</span>
+        <p class="font-bold text-gray-800 mt-2">Spring</p>
+        <p class="text-green-600 font-semibold">↑ High Prices</p>
+        <p class="text-xs text-gray-600">Sowing season demand</p>
+       </div>
+       <div class="p-4 bg-gradient-to-br from-yellow-50 to-orange-100 rounded-xl text-center"><span class="text-2xl">☀️</span>
+        <p class="font-bold text-gray-800 mt-2">Summer</p>
+        <p class="text-amber-600 font-semibold">→ Stable</p>
+        <p class="text-xs text-gray-600">Storage period</p>
+       </div>
+       <div class="p-4 bg-gradient-to-br from-orange-50 to-amber-100 rounded-xl text-center"><span class="text-2xl">🍂</span>
+        <p class="font-bold text-gray-800 mt-2">Autumn</p>
+        <p class="text-red-600 font-semibold">↓ Low Prices</p>
+        <p class="text-xs text-gray-600">Harvest surplus</p>
+       </div>
+       <div class="p-4 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl text-center"><span class="text-2xl">❄️</span>
+        <p class="font-bold text-gray-800 mt-2">Winter</p>
+        <p class="text-green-600 font-semibold">↑ Rising</p>
+        <p class="text-xs text-gray-600">Storage depletion</p>
+       </div>
+      </div>
+     </div>
+    </section><!-- DEMAND FORECAST PAGE -->
+    <section id="page-demand" class="page-section fade-in">
+     <div class="mb-6">
+      <h2 class="text-2xl font-bold text-green-800 mb-2">📈 Demand Forecast</h2>
+      <p class="text-gray-600">Understand market demand and supply patterns</p>
+     </div><!-- Demand Overview -->
+     <div class="grid md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-2xl p-6 text-white shadow-lg"><span class="text-3xl">📊</span>
+       <p class="text-3xl font-bold mt-2">High</p>
+       <p class="text-green-100">Current Demand Level</p>
+      </div>
+      <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-white shadow-lg"><span class="text-3xl">📦</span>
+       <p class="text-3xl font-bold mt-2">Medium</p>
+       <p class="text-blue-100">Supply Level</p>
+      </div>
+      <div class="bg-gradient-to-br from-amber-500 to-amber-700 rounded-2xl p-6 text-white shadow-lg"><span class="text-3xl">⚖️</span>
+       <p class="text-3xl font-bold mt-2">Deficit</p>
+       <p class="text-amber-100">Market Balance</p>
+      </div>
+     </div><!-- Supply vs Demand Chart -->
+     <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100 mb-6">
+      <h3 class="text-lg font-bold text-green-800 mb-4">Supply vs Demand Comparison</h3>
+      <canvas id="supplyDemandChart" height="250"></canvas>
+     </div><!-- Insights Section -->
+     <div class="bg-gradient-to-br from-green-50 to-amber-50 rounded-2xl p-6 shadow-lg border border-green-100">
+      <h3 class="text-lg font-bold text-green-800 mb-4">💡 Market Insights (Simple Explanation)</h3>
+      <div class="space-y-4">
+       <div class="flex items-start gap-4 p-4 bg-white rounded-xl"><span class="text-2xl">🌾</span>
+        <div>
+         <p class="font-semibold text-gray-800">Wheat demand is high this month</p>
+         <p class="text-gray-600 text-sm">More people want to buy wheat than farmers are selling. This means prices will likely go up. Consider selling now for good profits.</p>
+        </div>
+       </div>
+       <div class="flex items-start gap-4 p-4 bg-white rounded-xl"><span class="text-2xl">📅</span>
+        <div>
+         <p class="font-semibold text-gray-800">Best time to sell: Next 2 weeks</p>
+         <p class="text-gray-600 text-sm">Based on festival season and weather patterns, demand will peak in the next 2 weeks. After that, new harvest will increase supply.</p>
+        </div>
+       </div>
+       <div class="flex items-start gap-4 p-4 bg-white rounded-xl"><span class="text-2xl">💰</span>
+        <div>
+         <p class="font-semibold text-gray-800">Expected price increase: 5-8%</p>
+         <p class="text-gray-600 text-sm">If current trends continue, you can expect wheat prices to increase by 5-8% in the coming month.</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- WEATHER IMPACT PAGE -->
+    <section id="page-weather" class="page-section fade-in">
+     <div class="mb-6">
+      <h2 class="text-2xl font-bold text-green-800 mb-2">🌤️ Weather Impact Analysis</h2>
+      <p class="text-gray-600">See how weather affects crop prices</p>
+     </div><!-- Current Weather -->
+     <div class="bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500 rounded-2xl p-8 text-white shadow-lg mb-6">
+      <div class="grid md:grid-cols-2 gap-8 items-center">
+       <div>
+        <p class="text-blue-100 mb-2">Current Weather • Punjab Region</p>
+        <div class="flex items-center gap-4"><span class="text-6xl">🌤️</span>
+         <div>
+          <p class="text-5xl font-bold">28°C</p>
+          <p class="text-blue-100">Partly Cloudy</p>
+         </div>
+        </div>
+       </div>
+       <div class="grid grid-cols-3 gap-4">
+        <div class="text-center p-3 bg-white/20 rounded-xl"><span class="text-2xl">💧</span>
+         <p class="font-bold mt-1">65%</p>
+         <p class="text-xs text-blue-100">Humidity</p>
+        </div>
+        <div class="text-center p-3 bg-white/20 rounded-xl"><span class="text-2xl">🌧️</span>
+         <p class="font-bold mt-1">120mm</p>
+         <p class="text-xs text-blue-100">Rainfall</p>
+        </div>
+        <div class="text-center p-3 bg-white/20 rounded-xl"><span class="text-2xl">💨</span>
+         <p class="font-bold mt-1">12 km/h</p>
+         <p class="text-xs text-blue-100">Wind</p>
+        </div>
+       </div>
+      </div>
+     </div><!-- Weather vs Price Chart -->
+     <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100 mb-6">
+      <h3 class="text-lg font-bold text-green-800 mb-4">Rainfall &amp; Temperature vs Crop Price</h3>
+      <canvas id="weatherPriceChart" height="250"></canvas>
+     </div><!-- Weather Impact Explanation -->
+     <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+       <h3 class="text-lg font-bold text-green-800 mb-4">🌧️ How Rainfall Affects Prices</h3>
+       <div class="space-y-3">
+        <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl"><span class="text-2xl">💧</span>
+         <div>
+          <p class="font-semibold text-gray-800">Low Rainfall (Below 80mm)</p>
+          <p class="text-sm text-gray-600">Crops struggle → Less supply → Prices go UP</p>
+         </div>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-green-50 rounded-xl"><span class="text-2xl">✅</span>
+         <div>
+          <p class="font-semibold text-gray-800">Normal Rainfall (80-150mm)</p>
+          <p class="text-sm text-gray-600">Good harvest → Stable supply → Prices STABLE</p>
+         </div>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-red-50 rounded-xl"><span class="text-2xl">🌊</span>
+         <div>
+          <p class="font-semibold text-gray-800">Heavy Rainfall (Above 150mm)</p>
+          <p class="text-sm text-gray-600">Flooding risk → Crop damage → Prices go UP</p>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+       <h3 class="text-lg font-bold text-green-800 mb-4">🌡️ How Temperature Affects Prices</h3>
+       <div class="space-y-3">
+        <div class="flex items-center gap-3 p-3 bg-cyan-50 rounded-xl"><span class="text-2xl">❄️</span>
+         <div>
+          <p class="font-semibold text-gray-800">Too Cold (Below 15°C)</p>
+          <p class="text-sm text-gray-600">Slow growth → Delayed harvest → Prices go UP</p>
+         </div>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-green-50 rounded-xl"><span class="text-2xl">✅</span>
+         <div>
+          <p class="font-semibold text-gray-800">Optimal (20-30°C)</p>
+          <p class="text-sm text-gray-600">Best growth → Good yield → Prices STABLE</p>
+         </div>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-orange-50 rounded-xl"><span class="text-2xl">🔥</span>
+         <div>
+          <p class="font-semibold text-gray-800">Too Hot (Above 35°C)</p>
+          <p class="text-sm text-gray-600">Heat stress → Lower yield → Prices go UP</p>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section>
+   </main><!-- Footer -->
+   <footer class="bg-green-800 text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+     <div class="grid md:grid-cols-3 gap-8">
+      <div>
+       <h4 class="font-bold text-lg mb-3">Farm Market Link</h4>
+       <p class="text-green-200 text-sm">Empowering farmers with data-driven insights for better agricultural decisions.</p>
+      </div>
+      <div>
+       <h4 class="font-bold text-lg mb-3">Quick Links</h4>
+       <div class="space-y-2 text-green-200 text-sm">
+        <p class="cursor-pointer hover:text-white" onclick="showPage('home')">Home</p>
+        <p class="cursor-pointer hover:text-white" onclick="showPage('dashboard')">Dashboard</p>
+        <p class="cursor-pointer hover:text-white" onclick="showPage('price')">Price Forecast</p>
+       </div>
+      </div>
+      <div>
+       <h4 class="font-bold text-lg mb-3">Capstone Project</h4>
+       <p class="text-green-200 text-sm">Agricultural Pricing and Demand Forecast System using Big Data Analytics</p>
+      </div>
+     </div>
+     <div class="border-t border-green-700 mt-8 pt-6 text-center text-green-200 text-sm">
+      © 2024 Farm Market Link | Academic Capstone Project Demo
+     </div>
+    </div>
+   </footer>
+  </div>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      site_title: 'Farm Market Link',
+      tagline: 'Agricultural Pricing & Demand Forecast',
+      hero_heading: 'Smart Farming Starts Here',
+      hero_description: 'Get accurate crop price predictions and demand forecasts powered by weather data and market analytics. Make informed decisions for better yields.',
+      cta_button_text: 'View Market Forecast',
+      background_color: '#f0fdf4',
+      surface_color: '#ffffff',
+      text_color: '#166534',
+      primary_action_color: '#16a34a',
+      secondary_action_color: '#15803d'
+    };
+
+    let config = { ...defaultConfig };
+    let chartsInitialized = false;
+
+    // Page navigation
+    function showPage(pageId) {
+      document.querySelectorAll('.page-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById('page-' + pageId).classList.add('active');
+      
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.page === pageId) {
+          link.classList.add('active');
+        }
+      });
+      
+      document.getElementById('mobile-menu').classList.add('hidden');
+      
+      // Initialize charts when dashboard or other chart pages are shown
+      if (!chartsInitialized && (pageId === 'dashboard' || pageId === 'price' || pageId === 'demand' || pageId === 'weather')) {
+        setTimeout(initCharts, 100);
+        chartsInitialized = true;
+      }
+    }
+
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    }
+
+    // Initialize charts
+    function initCharts() {
+      // Price Trend Chart
+      const priceTrendCtx = document.getElementById('priceTrendChart');
+      if (priceTrendCtx) {
+        new Chart(priceTrendCtx, {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+              label: 'Wheat Price (₹/Quintal)',
+              data: [2100, 2200, 2150, 2300, 2400, 2450],
+              borderColor: '#16a34a',
+              backgroundColor: 'rgba(22, 163, 74, 0.1)',
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+
+      // Demand Chart
+      const demandCtx = document.getElementById('demandChart');
+      if (demandCtx) {
+        new Chart(demandCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Wheat', 'Rice', 'Corn', 'Soybean'],
+            datasets: [{
+              label: 'Demand Level (%)',
+              data: [85, 72, 65, 58],
+              backgroundColor: ['#16a34a', '#0891b2', '#d97706', '#7c3aed']
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+
+      // Price Forecast Chart
+      const priceCtx = document.getElementById('priceChart');
+      if (priceCtx) {
+        new Chart(priceCtx, {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            datasets: [{
+              label: 'Historical',
+              data: [2100, 2200, 2150, 2300, 2400, 2450, null, null],
+              borderColor: '#16a34a',
+              backgroundColor: 'rgba(22, 163, 74, 0.1)',
+              fill: true,
+              tension: 0.4
+            }, {
+              label: 'Predicted',
+              data: [null, null, null, null, null, 2450, 2520, 2580],
+              borderColor: '#3b82f6',
+              borderDash: [5, 5],
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } }
+          }
+        });
+      }
+
+      // Supply vs Demand Chart
+      const supplyDemandCtx = document.getElementById('supplyDemandChart');
+      if (supplyDemandCtx) {
+        new Chart(supplyDemandCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+              label: 'Supply',
+              data: [70, 75, 80, 72, 68, 65],
+              backgroundColor: '#3b82f6'
+            }, {
+              label: 'Demand',
+              data: [65, 70, 85, 80, 82, 85],
+              backgroundColor: '#16a34a'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } }
+          }
+        });
+      }
+
+      // Weather vs Price Chart
+      const weatherPriceCtx = document.getElementById('weatherPriceChart');
+      if (weatherPriceCtx) {
+        new Chart(weatherPriceCtx, {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+              label: 'Price (₹/100)',
+              data: [21, 22, 21.5, 23, 24, 24.5],
+              borderColor: '#16a34a',
+              yAxisID: 'y',
+              tension: 0.4
+            }, {
+              label: 'Rainfall (mm/10)',
+              data: [8, 6, 10, 12, 15, 12],
+              borderColor: '#0891b2',
+              yAxisID: 'y1',
+              tension: 0.4
+            }, {
+              label: 'Temperature (°C)',
+              data: [18, 22, 26, 30, 32, 28],
+              borderColor: '#d97706',
+              yAxisID: 'y1',
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: { position: 'left' },
+              y1: { position: 'right', grid: { drawOnChartArea: false } }
+            }
+          }
+        });
+      }
+    }
+
+    function updatePriceChart() {
+      // Placeholder for dynamic chart updates
+      console.log('Updating chart for:', document.getElementById('cropSelect').value, document.getElementById('regionSelect').value);
+    }
+
+    // Apply config to UI
+    async function onConfigChange(cfg) {
+      config = { ...defaultConfig, ...cfg };
+      
+      document.getElementById('site-title').textContent = config.site_title || defaultConfig.site_title;
+      document.getElementById('tagline').textContent = config.tagline || defaultConfig.tagline;
+      document.getElementById('hero-heading').textContent = config.hero_heading || defaultConfig.hero_heading;
+      document.getElementById('hero-description').textContent = config.hero_description || defaultConfig.hero_description;
+      document.getElementById('cta-button').querySelector('span').textContent = config.cta_button_text || defaultConfig.cta_button_text;
+    }
+
+    // Element SDK integration
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (cfg) => ({
+          recolorables: [
+            {
+              get: () => cfg.background_color || defaultConfig.background_color,
+              set: (v) => { cfg.background_color = v; window.elementSdk.setConfig({ background_color: v }); }
+            },
+            {
+              get: () => cfg.surface_color || defaultConfig.surface_color,
+              set: (v) => { cfg.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }
+            },
+            {
+              get: () => cfg.text_color || defaultConfig.text_color,
+              set: (v) => { cfg.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
+            },
+            {
+              get: () => cfg.primary_action_color || defaultConfig.primary_action_color,
+              set: (v) => { cfg.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); }
+            },
+            {
+              get: () => cfg.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (v) => { cfg.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); }
+            }
+          ],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (cfg) => new Map([
+          ['site_title', cfg.site_title || defaultConfig.site_title],
+          ['tagline', cfg.tagline || defaultConfig.tagline],
+          ['hero_heading', cfg.hero_heading || defaultConfig.hero_heading],
+          ['hero_description', cfg.hero_description || defaultConfig.hero_description],
+          ['cta_button_text', cfg.cta_button_text || defaultConfig.cta_button_text]
+        ])
+      });
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c1bcf2c74d47f3d',t:'MTc2OTA1MDkxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
